@@ -1,13 +1,13 @@
-// db.js
-const mysql = require('mysql2');
+const mongoose = require('mongoose');
 
-// Create a MySQL connection pool
-const pool = mysql.createPool({
-  host: 'localhost',      // MySQL server
-  user: 'root',           // MySQL username
-  password: 'Poohpooh_1', // MySQL password
-  database: 'inventory_system', // Database name
-});
+const connectDB = async () => {
+  try {
+    await mongoose.connect('mongodb://localhost:27017/order_management'); // No options needed
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error('Error connecting to MongoDB:', err.message);
+    process.exit(1);
+  }
+};
 
-// Export the pool as a promise-based interface for async queries
-module.exports = pool.promise();
+module.exports = connectDB;

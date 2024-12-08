@@ -17,9 +17,9 @@ const ProductList = () => {
       <h2>Product List</h2>
       <ul>
         {products.map(product => (
-          <li key={product.id}>
+          <li key={product._id}>
             {product.name} - ${product.price} 
-            <Link to={`/edit/${product.id}`}>Edit</Link>
+            <Link to={`/edit/${product._id}`}>Edit</Link>
           </li>
         ))}
       </ul>
@@ -29,4 +29,3 @@ const ProductList = () => {
 };
 
 export default ProductList;
-

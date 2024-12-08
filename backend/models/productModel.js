@@ -1,40 +1,12 @@
 // backend/models/productModel.js
-const db = require('../config/db');
+const mongoose = require('mongoose');
 
-const getProducts = () => {
-  return new Promise((resolve, reject) => {
-    db.query('SELECT * FROM products', (err, results) => {
-      if (err) reject(err);
-      resolve(results);
-    });
-  });
-};
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  quantity: { type: Number, required: true }
+});
 
-const createProduct = (product) => {
-  return new Promise((resolve, reject) => {
-    db.query('INSERT INTO products SET ?', product, (err, results) => {
-      if (err) reject(err);
-      resolve(results);
-    });
-  });
-};
+const Product = mongoose.model('Product', productSchema);
 
-const updateProduct = (id, product) => {
-  return new Promise((resolve, reject) => {
-    db.query('UPDATE products SET ? WHERE id = ?', [product, id], (err, results) => {
-      if (err) reject(err);
-      resolve(results);
-    });
-  });
-};
-
-const deleteProduct = (id) => {
-  return new Promise((resolve, reject) => {
-    db.query('DELETE FROM products WHERE id = ?', [id], (err, results) => {
-      if (err) reject(err);
-      resolve(results);
-    });
-  });
-};
-
-module.exports = { getProducts, createProduct, updateProduct, deleteProduct };
+module.exports = Product;

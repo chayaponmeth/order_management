@@ -1,54 +1,97 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const cors = require('cors');
-const mysql = require('mysql2');
-const app = express();
-const port = 5000;
 
-// Enable CORS for all routes
+// Load environment variables
+dotenv.config();
+
+const app = express();
+
+// Middleware
+app.use(express.json());
 app.use(cors());
 
-// Middleware to parse incoming JSON requests
-app.use(express.json());
+// MongoDB Connection
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/order_management';
 
-// Create a MySQL connection pool
-const pool = mysql.createPool({
-  host: 'localhost',      // MySQL server
-  user: 'root',           // MySQL username
-  password: 'Poohpooh_1', // MySQL password
-  database: 'inventory_system', // Database name
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.log('MongoDB connection error:', err));
+
+// Define a Product schema and model for demonstration
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  quantity: { type: Number, required: true },
 });
 
-// Example route to get all products
+const Product = mongoose.model('Product', productSchema);
+
+// API Routes
+// Get all products
+app.get('/', (req, res) => {
+  res.send('Welcome to the Order Management API');
+});
 app.get('/api/products', async (req, res) => {
   try {
-    const [rows] = await pool.promise().execute('SELECT * FROM products');
-    res.json(rows);  // Return the products as JSON
+    const products = await Product.find();
+    res.json(products);
   } catch (err) {
-    console.error('Error fetching products:', err);
-    res.status(500).json({ message: 'Error fetching products', error: err });
+    res.status(500).json({ error: 'Failed to fetch products' });
   }
 });
 
-// Route to add a new product
-app.post('/api/products', async (req, res) => {
-  const { name, price, quantity } = req.body;
-
-  // Check if all required fields are provided
-  if (!name || !price || !quantity) {
-    return res.status(400).json({ message: 'All fields are required' });
-  }
-
+// Get a product by ID
+app.get('/api/products/:id', async (req, res) => {
   try {
-    // Insert new product into the database
-    await pool.promise().execute('INSERT INTO products (name, price, quantity) VALUES (?, ?, ?)', [name, price, quantity]);
-    res.status(201).json({ message: 'Product added successfully' });
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+    res.json(product);
   } catch (err) {
-    console.error('Error adding product:', err);
-    res.status(500).json({ message: 'Error adding product', error: err });
+    res.status(500).json({ error: 'Failed to fetch product' });
+  }
+});
+
+// Create a new product
+app.post('/api/products', async (req, res) => {
+  try {
+    const newProduct = new Product(req.body);
+    await newProduct.save();
+    res.status(201).json({ message: 'Product added successfully', product: newProduct });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to add product' });
+  }
+});
+
+// Update a product by ID
+app.put('/api/products/:id', async (req, res) => {
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedProduct) return res.status(404).json({ error: 'Product not found' });
+    res.json({ message: 'Product updated successfully', product: updatedProduct });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update product' });
+  }
+});
+
+// Delete a product by ID
+app.delete('/api/products/:id', async (req, res) => {
+  try {
+    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+    if (!deletedProduct) return res.status(404).json({ error: 'Product not found' });
+    res.json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete product' });
   }
 });
 
 // Start the server
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+const PORT = process.env.PORT || 5000;
+// Start server
+app.listen(process.env.PORT, () => {
+  console.log(`Server running on http://localhost:${process.env.PORT}`);
 });
