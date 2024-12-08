@@ -1,19 +1,13 @@
-// backend/config/db.js
+// db.js
 const mysql = require('mysql2');
 
-const db = mysql.createConnection({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'inventory_system',
+// Create a MySQL connection pool
+const pool = mysql.createPool({
+  host: 'localhost',      // MySQL server
+  user: 'root',           // MySQL username
+  password: 'Poohpooh_1', // MySQL password
+  database: 'inventory_system', // Database name
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error('Database connection failed:', err);
-    return;
-  }
-  console.log('Connected to the database');
-});
-
-module.exports = db;
+// Export the pool as a promise-based interface for async queries
+module.exports = pool.promise();

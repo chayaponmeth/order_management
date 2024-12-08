@@ -1,14 +1,12 @@
-// src/components/EditProduct.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-
+import { useParams, useNavigate } from 'react-router-dom';
 
 const EditProduct = () => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const { id } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();  // useNavigate instead of useHistory
 
   useEffect(() => {
     axios.get(`http://localhost:5000/api/products/${id}`)
@@ -24,7 +22,7 @@ const EditProduct = () => {
     const updatedProduct = { name, price };
     axios.put(`http://localhost:5000/api/products/${id}`, updatedProduct)
       .then(() => {
-        history.push('/');
+        navigate('/');  // Using navigate to redirect after the update
       })
       .catch(error => console.error(error));
   };
@@ -54,4 +52,3 @@ const EditProduct = () => {
 };
 
 export default EditProduct;
-
