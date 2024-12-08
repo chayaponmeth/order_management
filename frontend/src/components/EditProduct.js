@@ -1,7 +1,8 @@
 // src/components/EditProduct.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 
 const EditProduct = () => {
   const [name, setName] = useState('');

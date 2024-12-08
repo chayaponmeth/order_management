@@ -1,46 +1,28 @@
-// src/components/AddProduct.js
+// src/components/AddProduct.js (after)
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';  // Import useNavigate instead of useHistory
 
 const AddProduct = () => {
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const history = useHistory();
+  const navigate = useNavigate();  // Use useNavigate
+  const [productName, setProductName] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newProduct = { name, price };
-    axios.post('http://localhost:5000/api/products', newProduct)
-      .then(() => {
-        history.push('/');
-      })
-      .catch(error => console.error(error));
+  const handleSubmit = () => {
+    // Add product logic here
+    // After adding the product, redirect to another page
+    navigate('/products');  // Use navigate instead of history.push
   };
 
   return (
     <div>
-      <h1>Add New Product</h1>
-      <form onSubmit={handleSubmit}>
-        <input 
-          type="text" 
-          placeholder="Product Name" 
-          value={name} 
-          onChange={(e) => setName(e.target.value)} 
-          required 
-        />
-        <input 
-          type="number" 
-          placeholder="Price" 
-          value={price} 
-          onChange={(e) => setPrice(e.target.value)} 
-          required 
-        />
-        <button type="submit">Add Product</button>
-      </form>
+      <input 
+        type="text" 
+        value={productName} 
+        onChange={(e) => setProductName(e.target.value)} 
+        placeholder="Product Name"
+      />
+      <button onClick={handleSubmit}>Add Product</button>
     </div>
   );
 };
 
 export default AddProduct;
-
