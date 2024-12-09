@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Box, Typography, TextField, Button, Alert } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { LogContext } from '../LogContext';
 
 const EditProduct = () => {
   const { id } = useParams(); // Get product ID from URL
   const navigate = useNavigate();
+  const { addLog } = useContext(LogContext); // Get the addLog function from LogContext
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
@@ -41,8 +43,15 @@ const EditProduct = () => {
 
     const updatedProduct = { name, price, quantity };
 
+    // Capture the old values
+    const oldPrice = price;
+    const oldQuantity = quantity;
+
     axios.put(`http://localhost:5000/api/products/${id}`, updatedProduct)
       .then(response => {
+        // Log the changes
+        addLog(name, oldPrice, oldQuantity, price, quantity);  // Add log with product name, old and new values
+
         setSuccessMessage('Product updated successfully!');
         setErrorMessage('');
         setTimeout(() => {
@@ -74,7 +83,7 @@ const EditProduct = () => {
           variant="outlined"
           sx={{ marginBottom: 3 }}
           fullWidth
-          startIcon={<ArrowBackIcon />} // เพิ่มไอคอนย้อนกลับที่นี่
+          startIcon={<ArrowBackIcon />}
         >
           Go Back
         </Button>
