@@ -22,16 +22,19 @@ import {
   AppBar,
   Toolbar,
   IconButton,
-  Grid,
+  TextField,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SortIcon from '@mui/icons-material/Sort';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, productId: null });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc'); // State สำหรับการจัดเรียง
 
   // Fetch products from the server
   useEffect(() => {
@@ -54,7 +57,6 @@ const ProductList = () => {
       .delete(`http://localhost:5000/api/products/${id}`)
       .then((response) => {
         alert(response.data.message); // Show success message
-        // Remove deleted product from the list
         setProducts(products.filter((product) => product._id !== id));
         setLoading(false);
       })
@@ -66,6 +68,23 @@ const ProductList = () => {
     setDeleteDialog({ open: false, productId: null });
   };
 
+  // Filter products based on search term
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.price.toString().includes(searchTerm)
+  );
+
+  // Sort products based on price
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
+  });
+
+  // Toggle sort order
+  const toggleSortOrder = () => {
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  };
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
       {/* Header */}
@@ -75,7 +94,8 @@ const ProductList = () => {
             Product Management
           </Typography>
           <Button
-            color="green"
+            variant="contained"
+            color="success"
             component={Link}
             to="/add"
             startIcon={<AddIcon />}
@@ -91,31 +111,52 @@ const ProductList = () => {
           Product List
         </Typography>
 
+        {/* Search and Sort Buttons */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+          <TextField
+            variant="outlined"
+            placeholder="Search by name or price"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ width: '100%', maxWidth: 400 }}
+          />
+          <Button
+            variant="contained"
+            startIcon={<SortIcon />}
+            onClick={toggleSortOrder}
+            sx={{ marginLeft: 2 }}
+          >
+            Sort by Price ({sortOrder === 'asc' ? 'Ascending' : 'Descending'})
+          </Button>
+        </Box>
+
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
             <CircularProgress />
           </Box>
-        ) : products.length > 0 ? (
+        ) : sortedProducts.length > 0 ? (
           <TableContainer component={Paper} sx={{ marginTop: 2 }}>
             <Table>
               <TableHead sx={{ backgroundColor: '#dfce5f' }}>
                 <TableRow>
-                  <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Name</TableCell>
-                  <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Price</TableCell>
-                  <TableCell align="right" sx={{ color: '#fff', fontWeight: 'bold' }}>
+                  <TableCell sx={{ color: '#444', fontWeight: 'bold' }}>Name</TableCell>
+                  <TableCell sx={{ color: '#444', fontWeight: 'bold' }}>Price</TableCell>
+                  <TableCell sx={{ color: '#444', fontWeight: 'bold' }}>Quantity</TableCell>
+                  <TableCell align="right" sx={{ color: '#444', fontWeight: 'bold' }}>
                     Actions
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {products.map((product) => (
+                {sortedProducts.map((product) => (
                   <TableRow key={product._id} hover>
                     <TableCell>{product.name}</TableCell>
                     <TableCell>${product.price}</TableCell>
+                    <TableCell>{product.quantity}</TableCell>
                     <TableCell align="right">
                       <Button
                         variant="contained"
-                        color="warning"
+                        color = "info"
                         size="small"
                         startIcon={<EditIcon />}
                         component={Link}
