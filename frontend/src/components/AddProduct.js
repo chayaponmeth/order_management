@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from 'react-router-dom';
+import { Button, TextField, Typography, Box, Alert, Container } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const AddProduct = () => {
   const [productName, setProductName] = useState('');
@@ -39,7 +41,7 @@ const AddProduct = () => {
       setErrorMessage('');
       // Optionally, you can navigate to another page after the product is added
       setTimeout(() => {
-        navigate('/products'); // Navigate to the product list page after a short delay
+        navigate('/'); // Navigate to the product list page after a short delay
       }, 2000);
     } catch (error) {
       console.error('There was an error adding the product:', error);
@@ -54,49 +56,66 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <div className="card p-4">
-        <h2 className="text-center mb-4">Add New Product</h2>
-        <button onClick={goBack} className="btn btn-secondary mb-3">Go Back</button> {/* Go Back Button */}
-        
+    <Container sx={{ maxWidth: 'sm', padding: 4 }}>
+      <Box sx={{ boxShadow: 3, padding: 4, borderRadius: 2, backgroundColor: '#f9f9f9' }}>
+        <Typography variant="h4" align="center" sx={{ marginBottom: 3, color: 'primary.main' }}>
+          Add New Product
+        </Typography>
+
+        <Button
+          onClick={goBack}
+          variant="outlined"
+          sx={{ marginBottom: 3 }}
+          fullWidth
+          startIcon={<ArrowBackIcon />} // เพิ่มไอคอนย้อนกลับที่นี่
+        >
+          Go Back
+        </Button>
+
         {/* Display Success or Error Message */}
-        {successMessage && <div className="alert alert-success">{successMessage}</div>}
-        {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+        {successMessage && <Alert severity="success" sx={{ marginBottom: 2 }}>{successMessage}</Alert>}
+        {errorMessage && <Alert severity="error" sx={{ marginBottom: 2 }}>{errorMessage}</Alert>}
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label">Product Name</label>
-            <input
-              type="text"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-              className="form-control"
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Product Price</label>
-            <input
-              type="number"
-              value={productPrice}
-              onChange={(e) => setProductPrice(e.target.value)}
-              className="form-control"
-              min="0.01" step="0.01" // To avoid zero or negative price
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Product Quantity</label>
-            <input
-              type="number"
-              value={productQuantity}
-              onChange={(e) => setProductQuantity(e.target.value)}
-              className="form-control"
-              min="1" // Ensure quantity is positive
-            />
-          </div>
-          <button type="submit" className="btn btn-primary w-100">Add Product</button>
+          <TextField
+            label="Product Name"
+            variant="outlined"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            fullWidth
+            required
+            sx={{ marginBottom: 2 }}
+          />
+          <TextField
+            label="Product Price"
+            variant="outlined"
+            type="number"
+            value={productPrice}
+            onChange={(e) => setProductPrice(e.target.value)}
+            fullWidth
+            required
+            min="0.01"
+            step="0.01"
+            sx={{ marginBottom: 2 }}
+          />
+          <TextField
+            label="Product Quantity"
+            variant="outlined"
+            type="number"
+            value={productQuantity}
+            onChange={(e) => setProductQuantity(e.target.value)}
+            fullWidth
+            required
+            min="1"
+            sx={{ marginBottom: 3 }}
+          />
+
+          <Button type="submit" variant="contained" color="primary" fullWidth>
+            Add Product
+          </Button>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Container>
   );
 };
 

@@ -1,7 +1,8 @@
-// src/components/EditProduct.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Container, Box, Typography, TextField, Button, Alert } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const EditProduct = () => {
   const { id } = useParams(); // Get product ID from URL
@@ -10,6 +11,8 @@ const EditProduct = () => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -20,22 +23,36 @@ const EditProduct = () => {
           setPrice(product.price);
           setQuantity(product.quantity);
         })
-        .catch(error => console.error(error));
+        .catch(error => {
+          console.error('Error fetching product:', error);
+          setErrorMessage('Failed to fetch product data.');
+        });
     }
   }, [id]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    // Validation: Check if the fields are valid
+    if (!name || !price || !quantity) {
+      setErrorMessage('All fields are required.');
+      return;
+    }
+
     const updatedProduct = { name, price, quantity };
 
     axios.put(`http://localhost:5000/api/products/${id}`, updatedProduct)
       .then(response => {
-        console.log('Product updated:', response.data);
-        navigate('/'); // Navigate to the homepage or product list
+        setSuccessMessage('Product updated successfully!');
+        setErrorMessage('');
+        setTimeout(() => {
+          navigate('/'); // Navigate to the homepage or product list
+        }, 2000);
       })
       .catch(error => {
         console.error('Error updating product:', error);
+        setErrorMessage('Error updating product. Please try again.');
+        setSuccessMessage('');
       });
   };
 
@@ -45,43 +62,67 @@ const EditProduct = () => {
   };
 
   return (
-    <div className="edit-product-container">
-      <h2>Edit Product</h2>
+    <Container sx={{ maxWidth: 'sm', paddingTop: 4 }}>
+      <Box sx={{ boxShadow: 3, padding: 4, borderRadius: 2, backgroundColor: '#f9f9f9' }}>
+        <Typography variant="h4" align="center" sx={{ marginBottom: 3, color: 'primary.main' }}>
+          Edit Product
+        </Typography>
 
-      {/* Go Back Button */}
-      <button onClick={goBack} className="btn btn-secondary mb-3">Go Back</button>
-      
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name:</label>
-          <input 
-            type="text" 
-            value={name} 
-            onChange={e => setName(e.target.value)} 
-            required 
+        {/* Go Back Button */}
+        <Button
+          onClick={goBack}
+          variant="outlined"
+          sx={{ marginBottom: 3 }}
+          fullWidth
+          startIcon={<ArrowBackIcon />} // เพิ่มไอคอนย้อนกลับที่นี่
+        >
+          Go Back
+        </Button>
+
+        {/* Display Success or Error Message */}
+        {successMessage && <Alert severity="success" sx={{ marginBottom: 2 }}>{successMessage}</Alert>}
+        {errorMessage && <Alert severity="error" sx={{ marginBottom: 2 }}>{errorMessage}</Alert>}
+
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="Product Name"
+            variant="outlined"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            fullWidth
+            required
+            sx={{ marginBottom: 2 }}
           />
-        </div>
-        <div>
-          <label>Price:</label>
-          <input 
-            type="number" 
-            value={price} 
-            onChange={e => setPrice(e.target.value)} 
-            required 
+          <TextField
+            label="Product Price"
+            variant="outlined"
+            type="number"
+            value={price}
+            onChange={e => setPrice(e.target.value)}
+            fullWidth
+            required
+            min="0.01"
+            step="0.01"
+            sx={{ marginBottom: 2 }}
           />
-        </div>
-        <div>
-          <label>Quantity:</label>
-          <input 
-            type="number" 
-            value={quantity} 
-            onChange={e => setQuantity(e.target.value)} 
-            required 
+          <TextField
+            label="Product Quantity"
+            variant="outlined"
+            type="number"
+            value={quantity}
+            onChange={e => setQuantity(e.target.value)}
+            fullWidth
+            required
+            min="1"
+            sx={{ marginBottom: 3 }}
           />
-        </div>
-        <button type="submit" className="btn btn-primary">Update Product</button>
-      </form>
-    </div>
+
+          <Button type="submit" variant="contained" color="primary" fullWidth>
+            Update Product
+          </Button>
+        </form>
+      </Box>
+    </Container>
   );
 };
 
