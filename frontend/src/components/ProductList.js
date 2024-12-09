@@ -1,125 +1,169 @@
-// src/components/ProductList.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  CircularProgress,
+  Typography,
+  Box,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Grid,
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, productId: null });
 
   // Fetch products from the server
   useEffect(() => {
-    axios.get('http://localhost:5000/api/products')
-      .then(response => {
+    axios
+      .get('http://localhost:5000/api/products')
+      .then((response) => {
         setProducts(response.data);
         setLoading(false);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching products:', error);
         setLoading(false);
       });
   }, []);
 
-  // Handle delete action with confirmation
+  // Handle delete action
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      axios.delete(`http://localhost:5000/api/products/${id}`)
-        .then(response => {
-          alert(response.data.message);
-          setProducts(products.filter(product => product._id !== id));
-        })
-        .catch(error => {
-          console.error('Error deleting product:', error);
-          alert('Failed to delete product');
-        });
-    }
-  };
-
-  // Filtering products based on search and price range
-  const filteredProducts = products.filter(product => {
-    const isInPriceRange =
-      (minPrice === '' || product.price >= minPrice) &&
-      (maxPrice === '' || product.price <= maxPrice);
-    const matchesSearchTerm =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return isInPriceRange && matchesSearchTerm;
-  });
-
-  // Alert for low stock (product quantity less than 5)
-  const renderStockAlert = (quantity) => {
-    if (quantity < 5) {
-      return <span className="badge bg-warning text-dark">Low Stock</span>;
-    }
-    return null;
+    setLoading(true);
+    axios
+      .delete(`http://localhost:5000/api/products/${id}`)
+      .then((response) => {
+        alert(response.data.message); // Show success message
+        // Remove deleted product from the list
+        setProducts(products.filter((product) => product._id !== id));
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error deleting product:', error);
+        alert('Failed to delete product');
+        setLoading(false);
+      });
+    setDeleteDialog({ open: false, productId: null });
   };
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Product List</h2>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      {/* Header */}
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Product Management
+          </Typography>
+          <Button
+            color="green"
+            component={Link}
+            to="/add"
+            startIcon={<AddIcon />}
+            sx={{ fontWeight: 'bold' }}
+          >
+            Add Product
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      {/* Search and Filter Controls */}
-      <div className="mb-4 d-flex justify-content-between">
-        <div>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search by product name"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="d-flex">
-          <input
-            type="number"
-            className="form-control me-2"
-            placeholder="Min Price"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-          />
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Max Price"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-          />
-        </div>
-      </div>
+      <Box sx={{ padding: 4 }}>
+        <Typography variant="h4" align="center" gutterBottom color="primary">
+          Product List
+        </Typography>
 
-      {/* Show loading state while fetching products */}
-      {loading ? (
-        <p>Loading products...</p>
-      ) : filteredProducts.length > 0 ? (
-        <ul className="list-group">
-          {filteredProducts.map(product => (
-            <li key={product._id} className="list-group-item d-flex justify-content-between align-items-center border shadow-sm p-3 mb-2 rounded">
-              <div>
-                <strong>{product.name}</strong> - ${product.price}
-                {renderStockAlert(product.quantity)}
-              </div>
-              <div>
-                <Link to={`/edit/${product._id}`} className="btn btn-warning btn-sm mr-2">
-                  <i className="bi bi-pencil-square"></i> Edit
-                </Link>
-                <button onClick={() => handleDelete(product._id)} className="btn btn-danger btn-sm">
-                  <i className="bi bi-trash"></i> Delete
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No products found.</p>
-      )}
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : products.length > 0 ? (
+          <TableContainer component={Paper} sx={{ marginTop: 2 }}>
+            <Table>
+              <TableHead sx={{ backgroundColor: '#dfce5f' }}>
+                <TableRow>
+                  <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Name</TableCell>
+                  <TableCell sx={{ color: '#fff', fontWeight: 'bold' }}>Price</TableCell>
+                  <TableCell align="right" sx={{ color: '#fff', fontWeight: 'bold' }}>
+                    Actions
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {products.map((product) => (
+                  <TableRow key={product._id} hover>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>${product.price}</TableCell>
+                    <TableCell align="right">
+                      <Button
+                        variant="contained"
+                        color="warning"
+                        size="small"
+                        startIcon={<EditIcon />}
+                        component={Link}
+                        to={`/edit/${product._id}`}
+                        sx={{ marginRight: 1 }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => setDeleteDialog({ open: true, productId: product._id })}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography align="center" sx={{ marginTop: 4 }}>
+            No products found.
+          </Typography>
+        )}
+      </Box>
 
-      {/* Add New Product Button */}
-      <Link to="/add" className="btn btn-primary mt-3">Add New Product</Link>
-    </div>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, productId: null })}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog({ open: false, productId: null })} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={() => handleDelete(deleteDialog.productId)} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 
