@@ -32,30 +32,54 @@ const EditProduct = () => {
     axios.put(`http://localhost:5000/api/products/${id}`, updatedProduct)
       .then(response => {
         console.log('Product updated:', response.data);
-        navigate('/');
+        navigate('/'); // Navigate to the homepage or product list
       })
       .catch(error => {
         console.error('Error updating product:', error);
       });
   };
 
+  // Go back to the previous page
+  const goBack = () => {
+    navigate(-1); // Navigate to the previous page in the browser history
+  };
+
   return (
-    <div>
+    <div className="edit-product-container">
       <h2>Edit Product</h2>
+
+      {/* Go Back Button */}
+      <button onClick={goBack} className="btn btn-secondary mb-3">Go Back</button>
+      
       <form onSubmit={handleSubmit}>
         <div>
           <label>Name:</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} required />
+          <input 
+            type="text" 
+            value={name} 
+            onChange={e => setName(e.target.value)} 
+            required 
+          />
         </div>
         <div>
           <label>Price:</label>
-          <input type="number" value={price} onChange={e => setPrice(e.target.value)} required />
+          <input 
+            type="number" 
+            value={price} 
+            onChange={e => setPrice(e.target.value)} 
+            required 
+          />
         </div>
         <div>
           <label>Quantity:</label>
-          <input type="number" value={quantity} onChange={e => setQuantity(e.target.value)} required />
+          <input 
+            type="number" 
+            value={quantity} 
+            onChange={e => setQuantity(e.target.value)} 
+            required 
+          />
         </div>
-        <button type="submit">Update Product</button>
+        <button type="submit" className="btn btn-primary">Update Product</button>
       </form>
     </div>
   );

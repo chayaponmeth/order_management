@@ -32,3 +32,23 @@ button {
 button:hover {
   background-color: #45a049;
 }
+/* AddProduct.css (optional) */
+.product-list-container {
+  margin: 20px;
+}
+
+.text-center {
+  font-size: 1.8rem;
+}
+
+.list-group-item {
+  font-size: 1.1rem;
+}
+
+.btn {
+  text-decoration: none;
+}
+
+.mt-3 {
+  margin-top: 20px;
+}
